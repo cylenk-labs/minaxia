@@ -28,22 +28,42 @@ Threat identification and threat modelling are outside the scope of Minaxia.
 
 ---
 
-# Assessment Unit
+# Assessment Unit {#assessment-unit}
 
-Estimate an **already identified, specific risk scenario**, not a product or vulnerability in the abstract. Scenario identification and preparation are outside this method.
+Estimate an **already identified, specific scenario**, not a product or vulnerability in the abstract. A scenario describes an adverse consequence that may occur under a defined set of conditions or circumstances. Scenario identification and preparation are outside this method.
+
+## Scenario conditions are assumed {#scenario-conditions}
+
+Minaxia assesses the risk of a scenario **given its stated assumptions and preconditions**. These define the starting point of the assessment. It estimates:
+
+- **Likelihood:** the practical feasibility of successfully reaching the adverse consequence from that starting point, based on the execution constraints represented by Vector, Opportunity and Capability; and
+- **Impact:** the consequence if the scenario succeeds, including the applicable impact modifiers.
+
+Minaxia does **not** estimate the likelihood that the assumed preconditions themselves will arise. It treats them as true for the assessment.
+
+Assumed preconditions are distinct from **execution constraints**. The former establish the starting point; the latter describe what still restricts execution from that point. Stating an execution constraint in the scenario does not remove it from scoring. For example, assuming that a vulnerability exists does not remove a maintenance window that restricts when it can be exploited.
+
+This is deliberate. Our knowledge may be insufficient to estimate the likelihood that a precondition will arise, such as a future vulnerability, a compromised communication channel or a new attack technique. By assuming that precondition, however, we can use our knowledge of the product to estimate the likelihood of the scenario succeeding and the impact if it does.
+
+Minaxia therefore supports resilience-oriented reasoning about the product: **given condition X or situation Y, how feasible is it to cause the defined adverse consequence, and how severe would that consequence be?**
+
+## Required scenario information {#scenario-information}
 
 The input scenario should identify, at minimum:
 
-- the affected asset, function, component, interface, service, or dependency, specifying which data and functions are included when judging the extent of consequences;
-- the action or event that causes the cybersecurity compromise;
+- the affected asset, function, component, interface, service or dependency, specifying which data and functions are included when judging the extent of consequences;
+- the assumed preconditions that define the starting point, including any compromise already assumed to have occurred;
+- the action or event being assessed that causes the cybersecurity compromise or leads from an assumed compromise to the adverse consequence;
 - the attack path or access route;
-- any relevant operating, deployment, or state conditions;
-- the credible direct consequence if the scenario succeeds; and
-- where consequences may extend across multiple deployed instances, how exploitation could credibly scale and which prerequisites must be repeated for each additional target.
+- the operating and deployment context, distinguishing assumed preconditions from the execution constraints represented by Vector, Opportunity and Capability;
+- the credible direct adverse consequence if the scenario succeeds; and
+- where consequences may extend across multiple deployed instances, how exploitation could credibly scale, which preconditions must hold for each additional target and which execution steps must be repeated.
 
-Where materially different attack paths require different access positions, opportunity conditions, or actor capabilities, rate them separately.
+## Assessing the defined scenario {#assessment-boundaries}
 
-Use the scenario as it can **credibly occur**. Do not rate an extreme consequence merely because it is imaginable.
+Where materially different attack paths have different Vector, Opportunity or Capability requirements, rate them separately.
+
+Assess credible execution and consequences **given the assumed preconditions**. Do not rate an extreme consequence merely because it is imaginable.
 
 ---
 
@@ -133,6 +153,8 @@ If uncertainty spans categories, use the higher score unless documented evidence
 Opportunity represents how practically available the **state or circumstances necessary to attempt the scenario** are.
 
 Opportunity answers **under what circumstances** the scenario can be executed. It must not duplicate physical or network reachability already represented by Vector.
+
+Rate the execution constraints that remain given the [assumed scenario preconditions](#scenario-conditions), not the likelihood that those preconditions will arise. A required operating state or timing window remains an execution constraint even when it is stated in the scenario.
 
 ### Opportunity scale
 
