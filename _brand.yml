@@ -1,0 +1,26 @@
+meta:
+  name: Cylenk
+  link: https://www.cylenk.com/
+
+color:
+  palette:
+    cylenk-purple: "#5F1992"
+    cylenk-indigo: "#231992"
+    cylenk-magenta: "#921989"
+    cylenk-charcoal: "#1E1E1D"
+    cylenk-grey: "#5B5A57"
+    cylenk-ivory: "#F2F0E8"
+  foreground: cylenk-charcoal
+  background: "#FFFFFF"
+  primary: cylenk-indigo
+  secondary: cylenk-grey
+  tertiary: cylenk-magenta
+  light: cylenk-ivory
+  dark: cylenk-charcoal
+
+typography:
+  headings:
+    color: cylenk-purple
+  link:
+    color: cylenk-indigo
+    decoration: underline

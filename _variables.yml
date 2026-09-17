@@ -1,0 +1,26 @@
+method:
+  version: "0.1.0-dev"
+
+score_scale:
+  minimum: 1
+  maximum: 10
+
+likelihood:
+  factor_count: 3
+  class_boundaries:
+    low: 3.07
+    medium: 4.06
+    high: 5.28
+    very_high: 6.65
+
+impact:
+  modifier:
+    count: 3
+    minimum: 0
+    maximum: 3
+    normalization: 9
+  class_boundaries:
+    low: 3
+    medium: 5
+    high: 7
+    very_high: 9

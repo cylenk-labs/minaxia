@@ -1,0 +1,45 @@
+/*-- scss:rules --*/
+
+/* Quarto applies the shared Cylenk palette from _brand.yml. */
+#quarto-content a:hover,
+.page-footer a:hover {
+  color: $brand-cylenk-magenta;
+}
+
+/* Retain an opaque, high-contrast focus indicator for keyboard navigation. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.nav-link:focus-visible,
+.navbar-toggler:focus-visible {
+  outline: 3px solid $brand-cylenk-indigo;
+  outline-offset: 3px;
+}
+
+/* The indigo navbar needs a light focus ring; indigo would disappear on it. */
+#quarto-header .nav-link:focus-visible,
+#quarto-header .navbar-toggler:focus-visible {
+  outline-color: $brand-cylenk-ivory;
+}
+
+.sidebar nav[role="doc-toc"] ul > li > a.active,
+.sidebar nav[role="doc-toc"] ul > li > ul > li > a.active {
+  border-left-color: $brand-cylenk-indigo;
+  color: $brand-cylenk-indigo !important;
+}
+
+.sidebar nav[role="doc-toc"] ul > li > a:hover,
+.sidebar nav[role="doc-toc"] ul > li > ul > li > a:hover {
+  color: $brand-cylenk-magenta !important;
+}
+
+/* Callouts are supplementary guidance, not risk-severity indicators. */
+.callout-note.callout {
+  border-left-color: $brand-cylenk-purple;
+}
+
+.callout-tip.callout {
+  border-left-color: $brand-cylenk-indigo;
+}

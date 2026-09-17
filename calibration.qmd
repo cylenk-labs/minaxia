@@ -1,0 +1,178 @@
+---
+title: "Minaxia Calibration"
+---
+
+**Version:** {{< var method.version >}}
+
+This document defines the calibration policy and records the initial class mappings for Minaxia. It is for method maintainers. Assessors apply the method described in [Minaxia](index.qmd).
+
+# Status and scope
+
+Version {{< var method.version >}} is an initial-development release. Its numerical category scores, modifier values, and formulas are design choices. They are scoring coordinates, not measurements of attack probability, event frequency, consequence frequency, or expected loss.
+
+Calibration maps calculated scores to ordinal Likelihood and Impact classes, then maps those classes to a Risk class. Its calibration surface is limited to:
+
+- the Likelihood class boundaries;
+- the Impact class boundaries; and
+- the Risk Matrix cells.
+
+The initial release has no calibration-scenario corpus and makes no empirical-validation claim. The mappings below provide a transparent starting point while scenario evidence is assembled. They allow the method to be applied consistently and its results to be evaluated, but they remain initial design choices.
+
+# Initial calibration
+
+## Likelihood class mapping
+
+Minaxia combines Vector, Opportunity, and Capability multiplicatively through their geometric mean. This design is probability-inspired: a restrictive factor materially lowers the result, and multiple restrictions compound. The root returns the result to the same $1$–$10$ scale as the inputs. The scores are not probabilities.
+
+The defined categories are discrete and unevenly spaced, so their possible combinations produce a non-uniform Likelihood distribution. In the absence of evidence for weighting some combinations more heavily than others, the initial calibration gives each possible category combination equal weight and places the class boundaries so that the five classes contain approximately equal populations. This is a neutral starting assumption, not a claim that the combinations are equally prevalent in practice.
+
+The possible factor scores are:
+
+- Vector: $1, 2, 3, 4, 5, 6, 8, 10$;
+- Opportunity: $1, 3, 6, 8, 9, 10$; and
+- Capability: $1, 3, 5, 7, 9, 10$.
+
+Opportunity composition does not introduce additional values: applying $\min$ to jointly required conditions and $\max$ to equivalent alternatives returns one of the defined Opportunity scores.
+
+The exhaustive population therefore contains:
+
+$$
+8\ \text{Vector categories}
+\times 6\ \text{Opportunity categories}
+\times 6\ \text{Capability categories}
+= 288\ \text{combinations}
+$$
+
+For every combination, Likelihood is calculated without rounding:
+
+$$
+\mathrm{Lik} = \sqrt[3]{V \times O \times \mathrm{Cap}}
+$$
+
+Combinations that produce the same numerical Likelihood remain separate observations, preserving their natural multiplicity. An identical Likelihood result cannot be divided between classes.
+
+The ideal population is $288 / 5 = 57.6$ combinations per class. The boundaries minimise the largest absolute departure from that ideal and then the total absolute departure, subject to keeping tied results together. Each published boundary is a two-decimal value between adjacent attainable scores.
+
+The resulting mapping is:
+
+| Class | Score range | Description |
+| --- | ---: | --- |
+| **Very High** | **${{< var likelihood.class_boundaries.very_high >}} \le \mathrm{Lik} \le {{< var score_scale.maximum >}}.00$** | Contains 60 of the 288 combinations. |
+| **High** | **${{< var likelihood.class_boundaries.high >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.very_high >}}$** | Contains 56 of the 288 combinations. |
+| **Medium** | **${{< var likelihood.class_boundaries.medium >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.high >}}$** | Contains 58 of the 288 combinations. |
+| **Low** | **${{< var likelihood.class_boundaries.low >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.medium >}}$** | Contains 57 of the 288 combinations. |
+| **Very Low** | **${{< var score_scale.minimum >}}.00 \le \mathrm{Lik} < {{< var likelihood.class_boundaries.low >}}$** | Contains 57 of the 288 combinations. |
+
+## Impact class mapping
+
+Impact uses an ordered severity scale. Base Impact is the highest applicable consequence score, and the modifiers move that score towards the maximum according to Replication, Persistence, and Detectability. The consequence dimensions are not independent or equally prevalent, so population balancing would not provide a neutral initial mapping.
+
+The initial calibration instead uses regular bands to preserve a simple relationship between the $1$–$10$ Impact scale and its five classes. At integer scoring coordinates, the bands group $9$–$10$, $7$–$8$, $5$–$6$, $3$–$4$, and $1$–$2$. Because modifiers can produce a non-integer Impact, the operative definitions use the half-open score ranges below.
+
+| Class | Score range | Description |
+| --- | ---: | --- |
+| **Very High** | **${{< var impact.class_boundaries.very_high >}}.0 \le \mathrm{Imp} \le {{< var score_scale.maximum >}}.0$** | Highest Impact band. |
+| **High** | **${{< var impact.class_boundaries.high >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.very_high >}}.0$** | High Impact band. |
+| **Medium** | **${{< var impact.class_boundaries.medium >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.high >}}.0$** | Medium Impact band. |
+| **Low** | **${{< var impact.class_boundaries.low >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.medium >}}.0$** | Low Impact band. |
+| **Very Low** | **${{< var score_scale.minimum >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.low >}}.0$** | Lowest Impact band. |
+
+## Risk Matrix
+
+The initial Risk Matrix is an ordinal design mapping. It is monotonic: increasing Likelihood or Impact while holding the other axis fixed never reduces the Risk class.
+
+The matrix also gives Impact deliberately greater influence in some asymmetric pairings. This precautionary choice prevents severe consequences from being suppressed solely because their Likelihood is low. For example, Very Low Likelihood with Very High Impact produces High Risk, whereas Very High Likelihood with Very Low Impact produces Medium Risk. Neither axis alone determines the result.
+
+| Likelihood ↓ / Impact → | Very High | High | Medium | Low | Very Low |
+| --- | --- | --- | --- | --- | --- |
+| **Very High** | **Very High** | **Very High** | **High** | **Medium** | **Medium** |
+| **High** | **Very High** | **Very High** | **High** | **Medium** | **Low** |
+| **Medium** | **Very High** | **High** | **Medium** | **Low** | **Low** |
+| **Low** | **High** | **Medium** | **Low** | **Low** | **Very Low** |
+| **Very Low** | **High** | **Medium** | **Low** | **Very Low** | **Very Low** |
+
+# Future scenario calibration
+
+Future calibration will use a versioned calibration-scenario corpus as the common evidence base for evaluating the initial mappings. The corpus may include documented real-world cases and deliberately constructed reference or boundary scenarios. Scenario selection must seek meaningful coverage of the method’s intended application rather than a favourable fit.
+
+## Calibration-scenario record
+
+Each calibration scenario must contain:
+
+- its origin and whether it is a real-world or constructed scenario;
+- a complete scenario and assessment boundary;
+- every assessor-selected category, score, and modifier value required by the published method;
+- the calculated Likelihood and Impact scores;
+- an independently established expected Likelihood class;
+- an independently established expected Impact class;
+- an independently established expected Risk class; and
+- the rationale and evidence for both the assessment inputs and expected outcomes.
+
+Expected classes are calibration targets. They must be established through documented expert judgement independently of Minaxia’s calculated outputs, then fixed before optimisation. Reviewer disagreement and its resolution must be recorded. Expected classes must not be changed merely to remove a regression.
+
+Every accepted scenario has equal weight. Materially duplicate scenarios must be identified and controlled so that repetition does not give one scenario family unintended influence. Adding, revising, or removing a scenario requires a recorded rationale.
+
+## Permitted calibration changes
+
+Scenario calibration may change only:
+
+- Likelihood class boundaries;
+- Impact class boundaries; and
+- Risk Matrix cells.
+
+It must not change category descriptions, category scores, modifier definitions or values, formulas, normalisation constants, or the applicability rule. A proposed change to any of those elements is method development, not calibration.
+
+This separation prevents boundary or matrix adjustments from concealing a defect in the underlying model. If material disagreement with expected outcomes cannot be resolved appropriately within the calibration surface, the method itself requires review.
+
+Likelihood and Impact boundaries must remain ordered and define five contiguous classes over the ${{< var score_scale.minimum >}}$–${{< var score_scale.maximum >}}$ score scale. The Risk Matrix must remain monotonic: holding either axis fixed, increasing Likelihood or Impact must never reduce the Risk class.
+
+## Regression objective
+
+For optimisation, assign ordinal coordinates $1$ to $5$ to Very Low through Very High. For each scenario, calculate the absolute class-step deviation from each expected outcome:
+
+$$
+\begin{aligned}
+\text{Scenario deviation}
+={}& \left|\text{calculated Likelihood class} - \text{expected Likelihood class}\right| \\
+ &+ \left|\text{calculated Impact class} - \text{expected Impact class}\right| \\
+ &+ \left|\text{calculated Risk class} - \text{expected Risk class}\right|.
+\end{aligned}
+$$
+
+Absolute class-step deviation respects the ordinal ordering without assigning additional meaning to the distance between classes. All scenarios and all three expected outcomes have equal weight. Calibration minimises total deviation over the complete corpus.
+
+If several mappings have the same minimum deviation:
+
+1. prefer the mapping that changes the fewest existing Likelihood, Impact, and Risk classifications across the corpus; then
+2. select among the remaining mappings through a documented comparison of boundary movement, the number and class-step magnitude of changed Risk Matrix cells, and structural simplicity.
+
+Structural simplicity means using only the boundary precision needed to separate relevant calculated scores, avoiding unnecessary boundary irregularity, and avoiding exceptional or isolated matrix patterns where the evidence does not require them. Simplicity must not override regression fit or output stability.
+
+The calibration record must report:
+
+- the corpus version and every scenario added, revised, or removed;
+- total deviation before and after calibration;
+- old and new class boundaries;
+- every changed Risk Matrix cell;
+- every scenario classification that changes; and
+- the rationale for selecting the mapping, including any tie-break judgement.
+
+# Stability and release policy
+
+Minaxia uses a three-position release identifier.
+
+- The **first position** changes for a revision to the assessor-facing model, including categories, scores, modifier values, formulas, normalisation constants, applicability rules, or a materially disruptive calibration.
+- The **second position** changes for routine calibration and substantive guidance changes that preserve the assessor-facing model.
+- The **third position** changes for editorial corrections and clarifications that are not intended to alter assessment results.
+
+While the first position is `0`, Minaxia is in initial development. Successive development releases may revise any part of the method and increment the second position. Such revisions must be identified as method development and must not be presented as calibration.
+
+From `1.0.0`, assessor-facing model elements are protected from change through routine calibration. Evidence of a model deficiency may still require explicit method development, impact review, and a release that increments the first position.
+
+Routine calibration may make limited adjustments to class boundaries and Risk Matrix cells as scenarios are added to or removed from the corpus. “Limited” is governed by impact review rather than a fixed numerical tolerance. Every recalibration must document boundary movement, changed matrix cells, and changed scenario classifications. A materially disruptive change requires an explicit method release and review.
+
+# Interpretation limits
+
+Population balancing organises the initial discrete Likelihood distribution; it does not describe the prevalence of real-world scenarios. Scenario regression measures agreement with expected corpus outcomes; it does not turn Minaxia scores into measured probabilities, frequencies, or expected losses.
+
+The calibration corpus is used to fit the mappings. Agreement with it is supporting evidence, not an independent test of generalisation. Independent or held-out scenarios are required to evaluate the calibrated method beyond its fitting corpus.

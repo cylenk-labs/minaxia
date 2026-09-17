@@ -1,0 +1,661 @@
+---
+title: "Minaxia"
+subtitle: "Cybersecurity Risk Estimation Method for Connected and Embedded Products"
+format:
+  html: default
+  # typst:
+  #   toc: true
+  #   number-sections: true
+  #   output-path: _pdf/
+  #   output-file: minaxia-method.pdf
+---
+
+**Version:** {{< var method.version >}}
+
+Published and maintained by [Cylenk](https://www.cylenk.com/) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · [About](about.qmd) · [Contributors](about.qmd#collaboration-and-contributors)
+
+Minaxia is a **semi-quantitative risk estimation method** for connected and embedded products. It supports risk estimation within a wider risk assessment process.
+
+The method uses numerical scoring coordinates to express qualitative judgements about attack feasibility and consequences. Its scores are not measured attack probabilities, frequencies, or expected losses. See the [Calibration basis](calibration.qmd) if interested.
+
+It starts from an already identified scenario with a credible adverse consequence and produces:
+
+1. a **Likelihood** class;
+2. an **Impact** class; and
+3. an overall **Risk** class.
+
+Threat identification and threat modelling are outside the scope of Minaxia.
+
+---
+
+# Assessment Unit
+
+Estimate an **already identified, specific risk scenario**, not a product or vulnerability in the abstract. Scenario identification and preparation are outside this method.
+
+The input scenario should identify, at minimum:
+
+- the affected asset, function, component, interface, service, or dependency, specifying which data and functions are included when judging the extent of consequences;
+- the action or event that causes the cybersecurity compromise;
+- the attack path or access route;
+- any relevant operating, deployment, or state conditions;
+- the credible direct consequence if the scenario succeeds; and
+- where consequences may extend across multiple deployed instances, how exploitation could credibly scale and which prerequisites must be repeated for each additional target.
+
+Where materially different attack paths require different access positions, opportunity conditions, or actor capabilities, rate them separately.
+
+Use the scenario as it can **credibly occur**. Do not rate an extreme consequence merely because it is imaginable.
+
+---
+
+# Model Overview
+
+Minaxia estimates risk as the combination of **Likelihood** and **Impact**.
+
+- **Likelihood (`Lik`)** combines Vector (`V`) (**where** execution is possible), Opportunity (`O`) (**under what circumstances** it is possible), and Capability (`Cap`) (**what technical capability** it requires).
+- **Base Impact (`B`)** captures the highest credible consequence across Confidentiality (`C`), Integrity (`I`), Availability (`A`), Safety (`S`), Loss (`Los`), and Disruption (`Dis`). The applicability check distinguishes scenarios with an adverse consequence from those with none.
+- **Impact Modifiers** amplify Base Impact for cross-target Replication (`Rep`), Persistence (`P`) of the harmful state, and Detectability (`Det`). Together with Base Impact, they determine the final Impact (`Imp`) and Impact class (`IC`).
+- **Risk** combines the Likelihood class (`LC`) and Impact class through the Risk Matrix to produce the Risk class (`RC`); it is not the arithmetic product of their scores.
+
+The [assessment procedure](#assessment-procedure) follows this order. Detailed category selection and calculation rules are given in the corresponding assessment sections.
+
+---
+
+# Scoring Conventions {#scoring-conventions}
+
+- A **category** is a textual anchor selected from a factor, consequence, or modifier table.
+- A **score** is the numeric coordinate assigned to a Likelihood factor or base-impact dimension, or the calculated Likelihood or Impact result.
+- A **modifier value** is an integer from `{{< var impact.modifier.minimum >}}` to `{{< var impact.modifier.maximum >}}` used to amplify Base Impact.
+- A **class** is an ordinal result: Very Low, Low, Medium, High, or Very High.
+
+Assessor-selected scores and modifier values are integers. Use the assigned table values rather than interpolating between semantic categories. Calculated results may be non-integer. `O` denotes Opportunity; `Dis` denotes Disruption; and `Det` denotes Detectability.
+
+Keep full calculation precision through class mapping. Round only for display, normally to two decimal places; do not use a rounded intermediate result in a later calculation. Class intervals include their lower bound and exclude their upper bound, except that the highest class includes `{{< var score_scale.maximum >}}`.
+
+## Uncertainty
+
+Where the available evidence does not support a confident choice between categories, use the more conservative applicable category unless documented evidence supports the lower rating.
+
+Record important assumptions and uncertainty with the assessment. Unknown consequences are not equivalent to the category None.
+
+## Double counting
+
+Do not score the same restriction or consequence twice merely because it can be described in different words. A security measure may legitimately affect multiple dimensions only where it creates **distinct effects** on the scenario.
+
+Separate execution constraints (Vector, Opportunity, and Capability), base consequences, and amplification after successful execution (Replication, Persistence, and Detectability). Follow the scoring rules for each factor or dimension.
+
+---
+
+# Assessment Procedure {#assessment-procedure}
+
+1. Review the supplied scenario, the data and functions being assessed, and deployment conditions against the required [assessment unit](#assessment-unit) information.
+2. Select Vector, Opportunity, and Capability scores; calculate the [Likelihood and class](#likelihood-score).
+3. Score the six [Base Impact](#base-impact) dimensions and perform the [applicability check](#applicability-check). If all are None, record the finding and stop; otherwise calculate Base Impact.
+4. Assess how exploitation could extend to additional targets and select Replication, Persistence, and Detectability values under [Impact Modifiers](#impact-modifiers).
+5. Calculate the [Impact and determine its class](#modified-impact-score).
+6. Combine the Likelihood and Impact classes using the [Risk Matrix](#risk-matrix).
+
+---
+
+# Likelihood Assessment
+
+Select scores for Vector, Opportunity, and Capability, then calculate and classify the Likelihood. All {{< var likelihood.factor_count >}} factors use a strictly positive `{{< var score_scale.minimum >}}..{{< var score_scale.maximum >}}` scale; a higher value means fewer practical execution constraints.
+
+## Vector (V) {#access-path}
+
+Vector answers **where** the actor must be or through what route the scenario can be performed. Select the category that describes the **actual access prerequisite of the scenario** and use its fixed score. Rate the attack route, not the device's location or the number of people, accounts, or endpoints that could use it. Fleet-wide amplification belongs in the Replication modifier.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Public / Internet** | **10** | The required route is publicly reachable, such as an Internet-facing service; no private-network membership, local proximity, or physical access is required. |
+| **Restricted external / federated network** | **8** | Access through an external network restricted to partners, operators, service providers, roaming participants, or federation members is required; the route is not publicly reachable. |
+| **Private multipurpose network** | **6** | Access to a general-purpose private network, such as a home, office, plant, or enterprise network, is required. |
+| **Dedicated private network** | **5** | Access to a private network dedicated to control, utility, service, or another specialised purpose is required. |
+| **Proximity** | **4** | Short-range wireless, optical, acoustic, or comparable local reach is required, without direct physical contact or manipulation. |
+| **Publicly accessible physical** | **3** | Direct contact, connection, or manipulation without disassembly is required, and the relevant interface or component is publicly accessible without a physical access restriction. |
+| **Controlled physical** | **2** | Direct contact, connection, or manipulation without disassembly is required, and the relevant interface or component is behind a physical access restriction, such as a locked dwelling, access-controlled factory floor, or locked cabinet. |
+| **Disassembly** | **1** | Opening or dismantling the enclosure is required to reach internal components or interfaces. |
+
+### Category selection
+
+- **Disassembly takes precedence for internal access:** an IP protocol reachable only after opening the enclosure and connecting to an internal service connector is Disassembly, not a network category. This applies to both a public kiosk and a privately held device. Opening a surrounding access-control cabinet to reach an external product interface is Controlled physical, not product disassembly.
+- **Distinguish exposed from controlled physical access:** an exposed kiosk port is Publicly accessible physical; the same external port inside a locked home or on an access-controlled factory floor is Controlled physical. Identify the actual barrier in the rationale; private ownership or industrial placement alone does not establish restricted access.
+- **Classify network reachability, not protocol or site labels:** a dedicated industrial control network is Dedicated private network; a general-purpose plant network is Private multipurpose network. A device on either network may still have a Public / Internet path if the assessed service is publicly reachable. Ordinary Internet transit through a service provider does not make a public route Restricted external / federated network.
+- **Use the route required by the scenario:** an attack over local radio is Proximity even when the device is inside a factory. Rate materially different physical, local-radio, and network paths as separate scenarios or attack paths.
+
+Physical and network access restrictions belong here, not in Opportunity. A required operating state or timing window belongs in Opportunity; required technical expertise or specialist tooling belongs in Capability. Disassembly does not by itself imply specialist capability, and the same access restriction must not be scored again in another factor.
+
+If uncertainty spans categories, use the higher score unless documented evidence supports the lower one. An impossible vector is not Disassembly or a minimum score: revisit the scenario instead of forcing it onto the scale.
+
+---
+
+## Opportunity (O) {#opportunity}
+
+Opportunity represents how practically available the **state or circumstances necessary to attempt the scenario** are.
+
+Opportunity answers **under what circumstances** the scenario can be executed. It must not duplicate physical or network reachability already represented by Vector.
+
+### Opportunity scale
+
+Rate Opportunity using the semantic scale below. Choose the category that best represents the practical restriction on attempts in the assessed product and deployment context.
+
+Use the following categories:
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | The condition imposes no material restriction on attempts. |
+| **Generally available** | **9** | The required condition exists for substantial periods or is readily encountered or established. |
+| **Routine** | **8** | The required condition occurs routinely during normal operation or use. |
+| **Specific** | **6** | A particular state must occur or be established; it is realistic but not routine. |
+| **Uncommon / restricted** | **3** | The condition is uncommon, deliberately established, significantly restricted, or available only for limited periods. |
+| **Exceptional / transient** | **1** | The condition occurs only exceptionally or exists within a very short or tightly constrained window. |
+
+### Opportunity dimensions
+
+A scenario may depend on several different kinds of Opportunity condition.
+
+Typical dimensions include:
+
+- **Operational state** — for example maintenance, commissioning, recovery, or a particular machine state;
+- **Data state** — for example a secret being present in plaintext working memory;
+- **Authentication / authorisation state** — for example an active privileged session;
+- **Protocol / transaction state** — for example a specific phase of pairing, update, or message exchange;
+- **Timing window** — for example a short interval after boot or reset.
+
+These dimensions are examples, not a closed taxonomy. A domain-specific dimension may be introduced when it genuinely describes a circumstance governing whether the scenario can be attempted.
+
+Only include conditions that materially constrain the assessed scenario. Use the [Opportunity scale](#opportunity-scale) for every dimension; the [Opportunity interpretation annex](#opportunity-interpretation) provides dimension-specific descriptions of these same categories, not separate scoring rules.
+
+No universal duration thresholds are implied. Rate the condition by its **practical restriction on attempts in the assessed product and deployment context**.
+
+### Jointly required conditions
+
+When several Opportunity conditions must all be satisfied for **one attack path**, use the most restrictive condition:
+
+$$
+O_{\mathrm{path}} = \min(O_1, O_2, \ldots, O_n)
+$$
+
+::: {.callout-note appearance="simple" title="The most restrictive required condition"}
+For a path requiring all three conditions:
+
+$$
+\begin{aligned}
+\text{Maintenance mode} &= \text{Specific} = 6 \\
+\text{Plaintext key present} &= \text{Uncommon / restricted} = 3 \\
+\text{Short post-reset window} &= \text{Exceptional / transient} = 1 \\
+O_{\mathrm{path}} &= \min(6, 3, 1) = 1
+\end{aligned}
+$$
+
+This $\min$ rule models the practical bottleneck among jointly necessary Opportunity conditions. It is separate from the geometric mean used to combine the three top-level Likelihood factors.
+:::
+
+### Alternative opportunities
+
+When independent alternative states provide different viable opportunities to perform the **same otherwise equivalent path**, use the easiest available alternative:
+
+$$
+O = \max\!\left(O_{\mathrm{path},1}, O_{\mathrm{path},2}, \ldots, O_{\mathrm{path},m}\right)
+$$
+
+A highly restricted alternative must not reduce the rating of another readily available alternative.
+
+If the alternatives also have materially different **Vectors** or **Capability** requirements, rate them as separate scenarios or attack paths rather than hiding those differences inside Opportunity.
+
+::: {.callout-note appearance="simple" title="Relationship to attack trees"}
+These rules mirror attack-tree structure: jointly required Opportunity conditions form an **AND** relationship and use $\min$, while equivalent alternative opportunities form an **OR** relationship and use $\max$. This mapping applies only to Opportunity conditions; paths with materially different Vector or Capability requirements remain separate assessments.
+:::
+
+### Distinguishing Opportunity from other factors {#opportunity-boundaries}
+
+The same constraint must not be credited in more than one factor.
+
+::: {.callout-tip appearance="simple" title="Separate route, state, and capability"}
+Use these distinctions to place a constraint in the appropriate factor:
+
+- "The actor must be on the maintenance VLAN" → **Vector**.
+- "The service is enabled only during maintenance mode" → **Opportunity**.
+- "The actor must develop a custom protocol exploit" → **Capability**.
+:::
+
+---
+
+## Capability (Cap) {#actor-capability}
+
+Capability measures the **technical capability required to execute the defined scenario**.
+
+It does **not** describe:
+
+- the identity of an attacker;
+- motivation;
+- intent;
+- criminal, insider, or nation-state classification;
+- organisational affiliation; or
+- a presumed threat-actor profile.
+
+Rate the minimum capability that is credibly sufficient to execute the scenario as defined.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Ordinary** | **10** | The scenario can be executed with common tools, publicly available functionality, and general technical ability. No meaningful specialist exploitation work is required. |
+| **Competent** | **9** | Requires practical technical competence and correct use or modest adaptation of known tools, procedures, or protocols, but no deep specialist exploitation capability. |
+| **Specialised** | **7** | Requires domain-specific security or engineering knowledge, specialist tooling, or established specialist techniques beyond general technical competence. |
+| **Advanced** | **5** | Requires substantial expertise, meaningful exploit adaptation or development, advanced reverse engineering, side-channel work, or comparable non-routine technical effort. |
+| **Highly specialised** | **3** | Requires rare specialist expertise, dedicated laboratory equipment, invasive work, fault injection, chip-level extraction, or similarly difficult bespoke execution. |
+| **Exceptional** | **1** | Requires frontier-level expertise, exceptional facilities or techniques, or capability rarely available even among specialists. |
+
+Rate what the scenario **requires**, not what a hypothetical named attacker might possess.
+
+Do not increase or decrease Capability merely because the presumed attacker is, for example, an insider, cybercriminal, researcher, administrator, or state actor.
+
+---
+
+## Likelihood (Lik) {#likelihood-score}
+
+Combine the factor scores with the geometric mean:
+
+$$
+\mathrm{Lik} = \sqrt[{{< var likelihood.factor_count >}}]{V \times O \times \mathrm{Cap}}
+$$
+
+where `V` is the Vector score, `O` is the final Opportunity score, and `Cap` is the Capability score. The result is always in `{{< var score_scale.minimum >}}..{{< var score_scale.maximum >}}`.
+
+::: {.callout-note appearance="simple" title="How the factors combine"}
+The geometric mean combines the factors multiplicatively while keeping the result on the same scale as the inputs. A restrictive factor lowers the combined score even when the other factors are permissive. The positive scale prevents a zero input from collapsing the result to zero. These are engineering scoring coordinates, not empirical probabilities of attack.
+:::
+
+### Likelihood class mapping (LC) {#likelihood-class-mapping}
+
+Map the unrounded Likelihood to a class:
+
+| Class | Score range | Description |
+| -------- | --------: | ---------------- |
+| **Very High** | **${{< var likelihood.class_boundaries.very_high >}} \le \mathrm{Lik} \le {{< var score_scale.maximum >}}.0$** | Likelihood from {{< var likelihood.class_boundaries.very_high >}} through {{< var score_scale.maximum >}}.0. |
+| **High** | **${{< var likelihood.class_boundaries.high >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.very_high >}}$** | Likelihood from {{< var likelihood.class_boundaries.high >}} up to, but not including, {{< var likelihood.class_boundaries.very_high >}}. |
+| **Medium** | **${{< var likelihood.class_boundaries.medium >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.high >}}$** | Likelihood from {{< var likelihood.class_boundaries.medium >}} up to, but not including, {{< var likelihood.class_boundaries.high >}}. |
+| **Low** | **${{< var likelihood.class_boundaries.low >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.medium >}}$** | Likelihood from {{< var likelihood.class_boundaries.low >}} up to, but not including, {{< var likelihood.class_boundaries.medium >}}. |
+| **Very Low** | **${{< var score_scale.minimum >}}.0 \le \mathrm{Lik} < {{< var likelihood.class_boundaries.low >}}$** | Likelihood from {{< var score_scale.minimum >}}.0 up to, but not including, {{< var likelihood.class_boundaries.low >}}. |
+
+---
+
+# Impact Assessment {#impact-assessment}
+
+Assess Impact in three stages: determine Base Impact, select Impact Modifiers, then calculate and classify the final Impact.
+
+## Base Impact (B) {#base-impact}
+
+Base Impact represents the highest credible consequence if the scenario succeeds, before amplification for Replication, Persistence, and Detectability.
+
+Before scoring, specify which data and functions are included when judging the extent of consequences. Distinguish consequences within the assessed instance or party from extension across additional targets, which belongs in Replication.
+
+Score each of the six dimensions independently: Confidentiality (`C`), Integrity (`I`), Availability (`A`), Safety (`S`), Loss (`Los`), and Disruption (`Dis`). Use the consequence caused by the scenario itself, including credible downstream effects, but do not duplicate effects reserved for the {{< var impact.modifier.count >}} modifiers.
+
+### Confidentiality (C) {#confidentiality}
+
+Confidentiality measures unauthorised disclosure of data handled by or accessible through the affected product, component, service, or dependency.
+
+Define the **protected-data boundary before selecting a category**, independently of the records exposed by the attack: state which data belongs to the assessed instance, account, service, or other justified assessment unit. Keep this choice consistent with the [replication boundary](#scale-analysis); do not redefine the protected data around the disclosed subset.
+
+Where category descriptions overlap, select the highest applicable score. Disclosure of a small credential subset of the protected data is **Minimal critical (`7`)**. Disclosure of all or substantially all **critical** protected data is **Complete (`10`)**, even if the total critical dataset is small. Complete disclosure of exclusively non-sensitive data remains **Extensive non-sensitive (`7`)**.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Complete** | **10** | All or substantially all relevant critical protected data is disclosed. |
+| **Extensive critical** | **8** | A broad set or large volume of critical data is disclosed. |
+| **Extensive non-sensitive** | **7** | A broad set or large volume of non-sensitive data is disclosed. |
+| **Minimal critical** | **7** | A limited amount of critical data is disclosed, such as credentials, secrets, security-sensitive configuration, sensitive personal data, or similarly consequential information. |
+| **Minimal non-sensitive** | **3** | A limited amount of non-sensitive data is disclosed. |
+| **None** | **1** | No unauthorised disclosure of relevant data. |
+
+::: {.callout-note appearance="simple" title="What makes data critical"}
+"Critical" is contextual and may include credentials, secrets, security-sensitive configuration, sensitive personal data, proprietary information, or other data whose disclosure materially increases harm.
+:::
+
+---
+
+### Integrity (I) {#integrity}
+
+Integrity measures unauthorised modification, corruption, manipulation, or forgery of data, commands, software, firmware, configuration, measurements, or product functions.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Complete** | **10** | Integrity of the relevant data, software, configuration, commands, measurements, or functions can be completely defeated or controlled. |
+| **Extensive / serious** | **8** | Broad corruption, manipulation, or forgery with serious consequence is possible. |
+| **Extensive / slight** | **6** | Broad corruption or manipulation is possible, but the consequence of each affected item remains slight. |
+| **Minimal / serious** | **4** | Limited in scope, but the affected item or function can be seriously corrupted, manipulated, or forged. |
+| **Minimal / slight** | **2** | Limited corruption or manipulation with slight consequence and narrow scope. |
+| **None** | **1** | No unauthorised modification, corruption, manipulation, or forgery of relevant data, commands, software, firmware, configuration, measurements, or functions. |
+
+
+::: {.callout-note appearance="simple" title="Authenticity"}
+Authenticity is not scored as a separate Minaxia dimension. Where an authenticity failure allows forged identities, commands, firmware, measurements, or data to be accepted, score its consequence under Integrity and, where applicable, the relevant real-world harm dimension.
+:::
+
+---
+
+### Availability (A) {#availability}
+
+Availability measures degradation or loss of the affected product's own relevant functions.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Complete** | **10** | Complete loss of the relevant product functions. |
+| **Extensive / primary** | **8** | Broad or prolonged interruption affects primary functions. |
+| **Extensive / secondary** | **6** | Broad or prolonged interruption affects secondary functions, while primary functions remain available. |
+| **Minimal / primary** | **6** | Limited or short interruption affects a primary function. |
+| **Minimal / secondary** | **2** | Limited or short interruption affecting only secondary functions. |
+| **None** | **1** | No credible degradation or loss of the product's relevant functions. |
+
+Availability concerns the product or service itself. Downstream disruption to activities, systems, or dependent services is scored separately as **Disruption**.
+
+Persistence must not be used to count the same outage duration twice. The Persistence modifier is reserved for persistence **of compromise or harmful state after the initiating action**, especially where trusted recovery is difficult or the attacker does not need to remain active.
+
+---
+
+### Safety (S) {#unsafe-harm}
+
+Safety measures credible adverse consequences to the health or physical safety of any affected person, including users, operators, bystanders, and other third parties.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Catastrophic** | **10** | Fatality or multiple severe or fatal casualties are a credible consequence. |
+| **Severe / permanent** | **8** | Permanent or life-altering injury, severe long-term health impairment, or a credible life-threatening consequence. |
+| **Serious** | **6** | Serious injury or health impairment, potentially requiring hospitalisation, but recovery is reasonably expected. |
+| **Moderate** | **4** | Reversible injury or health effect requiring medical treatment. |
+| **Minor** | **2** | Temporary discomfort or very minor injury; professional medical treatment is normally not required. |
+| **None** | **1** | No credible adverse effect on health or physical safety. |
+
+---
+
+### Loss (Los) {#financial-material-harm}
+
+Loss measures credible financial loss or material/property damage caused by successful exploitation.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Catastrophic** | **10** | Exceptional, widespread, or systemic financial/material loss affecting one or more parties. |
+| **Severe** | **8** | Very large loss, destruction of high-value assets, or consequences threatening the economic viability of an affected party. |
+| **Significant** | **6** | Major loss to an affected party; substantial fraud, asset loss, or property damage. |
+| **Moderate** | **4** | Noticeable financial loss or damage requiring repair or replacement, without major economic consequences. |
+| **Minor** | **2** | Small and readily absorbable loss or minor property damage. |
+| **None** | **1** | No credible financial loss or material/property damage. |
+
+The manufacturer's cost of remediation is **not automatically impact**. A costly redesign, recall, or field-service campaign does not raise Loss when that cost is not a consequence of successful exploitation itself.
+
+---
+
+### Disruption (Dis) {#operational-harm}
+
+Disruption measures disruption or degradation of activities, processes, systems, services, or capabilities that depend on the affected product or service.
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Catastrophic** | **10** | Widespread or prolonged failure of critical operations or services with major downstream consequences. |
+| **Severe** | **8** | Loss of an essential operational capability, prolonged outage, or disruption affecting multiple dependent systems or users. |
+| **Significant** | **6** | Major disruption of important activities, systems, or services; substantial manual intervention or recovery is required. |
+| **Moderate** | **4** | Noticeable disruption or degradation; a workaround exists and essential activities can continue. |
+| **Minor** | **2** | Small inconvenience or short-lived disruption; normal operation largely continues. |
+| **None** | **1** | No credible operational consequence. |
+
+::: {.callout-tip appearance="simple" title="Distinguish product loss from downstream disruption"}
+**Availability** asks what happens to the affected product's functions.
+
+**Disruption** asks what that technical loss does to the activities, systems, or services that depend on those functions.
+:::
+
+---
+
+### Applicability check {#applicability-check}
+
+After scoring all six dimensions, check whether any has a category other than **None**.
+
+If all six dimensions are **None**, record **“No identified adverse consequence”**, what was assessed, and the supporting evidence and rationale. Stop the estimation procedure: do not apply impact modifiers, map an Impact class, or assign a Risk class. This result is not a Very Low rating; the previously calculated Likelihood does not by itself constitute a Risk rating.
+
+Unknown or insufficiently investigated consequences are **not** “None”; investigate further and record the uncertainty. If repetition or aggregation creates a credible adverse consequence, rate that harmful scenario rather than amplifying an otherwise consequence-free action.
+
+### Base Impact calculation
+
+For scenarios that pass the applicability check, calculate Technical Impact (`TI`), Real-World Impact (`RI`), and Base Impact (`B`):
+
+$$
+\begin{aligned}
+\mathrm{TI} &= \max(C, I, A), \\
+\mathrm{RI} &= \max(S, \mathrm{Los}, \mathrm{Dis}), \\
+B &= \max(\mathrm{TI}, \mathrm{RI}).
+\end{aligned}
+$$
+
+Equivalently:
+
+$$
+B = \max(C, I, A, S, \mathrm{Los}, \mathrm{Dis})
+$$
+
+Do not average unrelated impact dimensions.
+
+---
+
+## Impact Modifiers {#impact-modifiers}
+
+Select a category for each of the {{< var impact.modifier.count >}} modifiers below. Each uses four ordered semantic levels mapped linearly to integer modifier values from `{{< var impact.modifier.minimum >}}` to `{{< var impact.modifier.maximum >}}`.
+
+### Replication (Rep) {#scale-modifier}
+
+Replication captures **cross-instance or cross-party amplification**: how far successful exploitation can credibly extend the consequence across additional products, users, systems, services, or other affected parties.
+
+#### Replication boundary {#scale-analysis}
+
+For the assessed scenario, examine the **replication boundary**: the set of prerequisites that must be repeated for every additional affected target.
+
+The key question is:
+
+> **Which prerequisites must be repeated for each additional affected product or party?**
+
+Consider at least:
+
+- whether Vector must be obtained again for each target;
+- whether the relevant Opportunity condition must recur independently for each target;
+- whether execution requires meaningful per-target technical work;
+- whether per-device credentials, keys, state, or physical characteristics prevent reuse;
+- whether exploitation can be scripted or automated once developed; and
+- whether a shared secret, common service, update mechanism, dependency, control plane, or propagation mechanism removes the need to repeat the original compromise.
+
+#### Replication categories {#scale-categories}
+
+Select the category supported by the replication analysis.
+
+| Category | Modifier value | Description |
+| -------- | --: | ---------------- |
+| **One-to-many** | **3** | One successful compromise or one shared enabling condition can directly affect multiple products or parties, or removes the need to repeat the original restrictive prerequisite. |
+| **Automatable** | **2** | Once the technique is developed, it can be executed against additional reachable targets with little marginal effort. Per-target reachability or state may still be required. |
+| **Repeatable** | **1** | The technique, exploit, tooling, or knowledge can be reused, but each additional target still requires meaningful individual access, state, interaction, or execution effort. |
+| **Per-instance** | **0** | Material prerequisites must be independently satisfied for every affected product or party. Compromising one instance does not materially reduce the work required for the next. |
+
+::: {.callout-note appearance="simple" title="One-to-many mechanisms"}
+Typical one-to-many mechanisms include shared secrets, common backends, malicious update infrastructure, common dependencies, control planes, or self-propagation.
+:::
+
+#### Avoiding double counting {#boundary-against-double-counting}
+
+Do not increase both Base Impact and Replication for the same breadth effect. Disclosure or control of all data or functions within one assessed instance belongs in the relevant base-impact dimension, not Replication.
+
+Replication amplifies the consequence **after successful exploitation**; it does not alter the Likelihood. Do not increase Likelihood merely because a scenario is automatable when Vector, Opportunity, or Capability already capture why execution is easy.
+
+::: {.callout-tip appearance="simple" title="Separate within-target breadth from cross-target amplification"}
+- **All files on one device disclosed** → score the breadth in Confidentiality; Replication may still be `0` if only one device is affected.
+- **The same disclosure is automatically harvested from thousands of independently reachable devices** → Base Confidentiality describes the consequence per affected device/data set; Replication captures cross-device amplification.
+- **One backend compromise exposes every device account at once** → Replication is **One-to-many (`3`)**. Rate Base Confidentiality for the protected data defined for each account; Replication captures the extension across accounts.
+:::
+
+---
+
+### Persistence (P) {#persistence-modifier}
+
+Persistence measures how strongly the harmful state survives the initiating attack action and how difficult it is to restore a trusted state.
+
+| Category | Modifier value | Description |
+| -------- | --: | ---------------- |
+| **Persistent / hard to reverse** | **3** | The attacker can establish a long-lived or self-restoring compromise, or reliable recovery to a trusted state is difficult, costly, uncertain, or requires replacement of material assets. |
+| **Durable / service recovery** | **2** | The compromise or harmful state persists until deliberate repair, re-provisioning, reimaging, key rotation, service intervention, or comparable recovery is performed. |
+| **Recoverable** | **1** | The effect persists beyond the action but normal restart, re-authentication, reconfiguration, or routine recovery restores a trusted state. |
+| **Transient / self-clearing** | **0** | Harm ends with the attack action or clears automatically through ordinary operation; no special recovery is needed. |
+
+Persistence is not simply "long duration". Do not double count duration already used to choose Availability or Disruption. The modifier is about **survival and reversibility of the compromised state**.
+
+::: {.callout-note appearance="simple" title="Examples of lasting compromise"}
+Examples that can justify high Persistence include persistent firmware modification, implanted credentials, durable cloud-side account takeover, destructive corruption that defeats normal recovery, or compromise that survives reboot and ordinary update mechanisms.
+:::
+
+---
+
+### Detectability (Det) {#low-detectability-modifier}
+
+Detectability measures how difficult it is for the affected user, operator, organisation, manufacturer, or relevant monitoring function to detect the compromise or harmful effect in time to react.
+
+The modifier value is oriented so that **higher means worse detectability and therefore greater impact amplification**.
+
+| Category | Modifier value | Description |
+| -------- | --: | ---------------- |
+| **Covert / effectively undetectable** | **3** | The compromise can plausibly operate without visible symptoms or reliable telemetry, leave little useful evidence, or leak/manipulate data without the affected party being able to identify that it is occurring. |
+| **Difficult / delayed** | **2** | Detection requires dedicated analysis, correlation, forensic review, unusual user observation, or a later secondary symptom; harmful activity may continue before discovery. |
+| **Normally detectable** | **1** | Ordinary monitoring, logs, user observation, or routine integrity checks are likely to reveal the event within a useful response window. |
+| **Obvious / immediate** | **0** | The compromise or harmful effect is directly apparent or reliably raises an immediate alert. Normal response can begin promptly. |
+
+Detectability is an **impact modifier**, not an attacker-identity or anonymity score. The relevant question is not whether the attacker is personally identifiable, but whether the compromise and its consequences can be detected and bounded.
+
+Do not double count a stealth requirement that is itself necessary to execute the attack. If evading a specific detection control materially increases the technical capability required for the scenario, that execution difficulty belongs in Capability. Detectability here describes the consequence **after successful execution**.
+
+::: {.callout-tip appearance="simple" title="Explain the detection route"}
+In the rationale, identify who could notice the compromise or harmful effect, what signal would reveal it, and whether that signal would arrive in time to limit harm. This makes the selected Detectability category easier to review.
+:::
+
+---
+
+## Impact (Imp) and Class {#modified-impact-score}
+
+### Impact calculation
+
+Let:
+
+- `B` be Base Impact;
+- `Rep` be the Replication modifier value;
+- `P` be the Persistence modifier value; and
+- `Det` be the Detectability modifier value.
+
+Calculate the Modifier Fraction (`MF`) and Impact (`Imp`):
+
+$$
+\begin{aligned}
+\mathrm{MF} &= \frac{\mathrm{Rep} + P + \mathrm{Det}}{ {{< var impact.modifier.normalization >}} }, \\
+\mathrm{Imp} &= B + \left({{< var score_scale.maximum >}} - B\right) \times \mathrm{MF}.
+\end{aligned}
+$$
+
+### Impact class mapping (IC) {#impact-class-mapping}
+
+Map the unrounded Impact to a class:
+
+| Class | Score range | Description |
+| -------- | --------: | ---------------- |
+| **Very High** | **${{< var impact.class_boundaries.very_high >}}.0 \le \mathrm{Imp} \le {{< var score_scale.maximum >}}.0$** | Impact from {{< var impact.class_boundaries.very_high >}}.0 through {{< var score_scale.maximum >}}.0. |
+| **High** | **${{< var impact.class_boundaries.high >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.very_high >}}.0$** | Impact from {{< var impact.class_boundaries.high >}}.0 up to, but not including, {{< var impact.class_boundaries.very_high >}}.0. |
+| **Medium** | **${{< var impact.class_boundaries.medium >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.high >}}.0$** | Impact from {{< var impact.class_boundaries.medium >}}.0 up to, but not including, {{< var impact.class_boundaries.high >}}.0. |
+| **Low** | **${{< var impact.class_boundaries.low >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.medium >}}.0$** | Impact from {{< var impact.class_boundaries.low >}}.0 up to, but not including, {{< var impact.class_boundaries.medium >}}.0. |
+| **Very Low** | **${{< var score_scale.minimum >}}.0 \le \mathrm{Imp} < {{< var impact.class_boundaries.low >}}.0$** | Impact from {{< var score_scale.minimum >}}.0 up to, but not including, {{< var impact.class_boundaries.low >}}.0. |
+
+### Interpreting the calculation
+
+The formula can also be written as:
+
+$$
+\mathrm{Imp} = (1 - \mathrm{MF}) \times B + \mathrm{MF} \times {{< var score_scale.maximum >}}
+$$
+
+Modifiers consume only the **remaining headroom up to {{< var score_scale.maximum >}}**:
+
+- Impact cannot fall below Base Impact or exceed ${{< var score_scale.maximum >}}$;
+- all minimum modifier values leave Impact equal to Base Impact;
+- all maximum modifier values raise Impact to ${{< var score_scale.maximum >}}$;
+- each modifier step consumes $\frac{1}{ {{< var impact.modifier.normalization >}} }$ of the remaining headroom, so all steps have the same linear weight;
+- one maximum modifier consumes $\frac{ {{< var impact.modifier.maximum >}} }{ {{< var impact.modifier.normalization >}} }$ of the remaining headroom; and
+- a Base Impact of ${{< var score_scale.maximum >}}$ remains ${{< var score_scale.maximum >}}$, regardless of modifiers.
+
+
+---
+
+# Risk estimation (RC) {#risk-matrix}
+
+For scenarios that pass the [applicability check](#applicability-check), combine the Likelihood class and Impact class using the following matrix.
+
+|   Impact →   Likelihood ↓| Very High | High | Medium | Low | Very Low |
+| --- | --- | --- | --- | --- | --- |
+| **Very High** | **Very High** | **Very High** | **High** | **Medium** | **Medium** |
+| **High** | **Very High** | **Very High** | **High** | **Medium** | **Low** |
+| **Medium** | **Very High** | **High** | **Medium** | **Low** | **Low** |
+| **Low** | **High** | **Medium** | **Low** | **Low** | **Very Low** |
+| **Very Low** | **High** | **Medium** | **Low** | **Very Low** | **Very Low** |
+
+The classes are ordinal. Do not replace the matrix with arithmetic multiplication of class numbers.
+
+---
+
+# Annex — Opportunity Interpretation {#opportunity-interpretation}
+
+These tables explain how the authoritative [Opportunity scale](#opportunity-scale) applies to common dimensions. They retain its categories and scores; they do not establish independent scales. The [jointly required conditions](#jointly-required-conditions) and [alternative opportunities](#alternative-opportunities) rules still apply.
+
+Descriptions and examples concern the practical availability of a required condition in the assessed deployment. Maintenance, sensitive data, or privileged access does not imply a fixed category by itself.
+
+## Operational state {#operational-state}
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | No particular operating state is required; the scenario can be attempted irrespective of operating mode. |
+| **Generally available** | **9** | The required operating state lasts for substantial periods or is readily established, such as a normally enabled service mode. |
+| **Routine** | **8** | The required state recurs during normal operation or use, such as a routine start-up or scheduled operating cycle. |
+| **Specific** | **6** | A particular state must occur or be established, such as a maintenance mode that is realistic to encounter but not part of routine operation. |
+| **Uncommon / restricted** | **3** | The required state is rarely entered or its activation is significantly restricted, such as a service mode reserved for infrequent interventions. |
+| **Exceptional / transient** | **1** | The required state occurs only exceptionally or exists briefly during a tightly constrained transition, such as a short-lived fault-recovery state. |
+
+## Data state {#data-state}
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | No particular data state is required; the scenario does not depend on data being loaded, decrypted, or otherwise prepared. |
+| **Generally available** | **9** | The required data state exists for substantial periods or is readily established, such as plaintext working data retained throughout an active session. |
+| **Routine** | **8** | The required data state recurs during normal processing, such as a working copy materialised for each routine measurement cycle. |
+| **Specific** | **6** | The required data state depends on a particular, non-routine operation, such as loading a protected configuration for a maintenance task. |
+| **Uncommon / restricted** | **3** | The required data state is rare or available only under restricted processing conditions, such as sensitive material loaded for an infrequent provisioning operation. |
+| **Exceptional / transient** | **1** | The required data state occurs only exceptionally or survives for a tightly constrained interval, such as a plaintext secret immediately cleared after use. |
+
+## Authentication / authorisation state {#authentication-authorisation-state}
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | No authenticated session or particular authorisation state is required to attempt the scenario. |
+| **Generally available** | **9** | The required session or authorisation state lasts for substantial periods or is readily established, such as a normally active operator session. |
+| **Routine** | **8** | The required session or authorisation state recurs during ordinary use, such as a login performed for each normal operating shift. |
+| **Specific** | **6** | A particular session or authorisation state must occur or be established for a realistic but non-routine task, such as configuration administration. |
+| **Uncommon / restricted** | **3** | The required session or authorisation state is rarely active or tightly restricted in its availability, such as a service session enabled only for infrequent support work. |
+| **Exceptional / transient** | **1** | The required authorisation state occurs only exceptionally or exists during a tightly constrained transition, such as a momentary privilege change. |
+
+## Protocol / transaction state {#protocol-transaction-state}
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | No particular protocol phase or transaction state is required to attempt the scenario. |
+| **Generally available** | **9** | The required phase persists for substantial periods or is readily re-established, such as a long-lived connection state. |
+| **Routine** | **8** | The required phase recurs in ordinary exchanges, such as a transaction stage reached during each routine status update. |
+| **Specific** | **6** | The required phase belongs to a realistic but non-routine exchange, such as pairing or a configuration transfer. |
+| **Uncommon / restricted** | **3** | The required phase is reached only through an infrequent or significantly restricted procedure, such as a credential-renewal exchange reserved for infrequent service interventions. |
+| **Exceptional / transient** | **1** | Execution requires an exceptional protocol state or a tightly constrained transition, such as a race between validating and applying an update. |
+
+## Timing window {#timing-window}
+
+| Category | Score | Description |
+| -------- | --: | ---------------- |
+| **Unrestricted** | **10** | No timing window constrains when the scenario can be attempted. |
+| **Generally available** | **9** | The usable window is broad or readily encountered or established, allowing attempts without material scheduling difficulty. |
+| **Routine** | **8** | A usable window recurs predictably during normal operation, such as an interval in each routine operating cycle. |
+| **Specific** | **6** | Attempts require a particular, bounded interval that is realistic to encounter but not routinely available, such as a non-routine maintenance window. |
+| **Uncommon / restricted** | **3** | The usable window is narrow, infrequent, or significantly restricted, materially limiting the occasions for an attempt. |
+| **Exceptional / transient** | **1** | Attempts must coincide with an exceptional or extremely narrow interval, such as a brief post-reset window requiring precise synchronisation. |

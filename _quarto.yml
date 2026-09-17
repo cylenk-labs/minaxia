@@ -1,0 +1,41 @@
+project:
+  type: website
+  # Publish only these pages; README and contribution guidance stay on GitHub.
+  render:
+    - index.qmd
+    - calibration.qmd
+    - about.qmd
+
+website:
+  title: "Minaxia"
+  description: "An openly licensed semi-quantitative cybersecurity risk estimation method for connected and embedded products, published and maintained by Cylenk."
+  site-url: https://www.cylenk.com/minaxia/
+  repo-url: https://github.com/cylenk-labs/minaxia
+  repo-branch: main
+  repo-actions: [source, issue, edit]
+  navbar:
+    left:
+      - href: index.qmd
+        text: Minaxia
+      - href: calibration.qmd
+        text: Calibration
+      - about.qmd
+    right:
+      - icon: github
+        text: GitHub
+        href: https://github.com/cylenk-labs/minaxia
+  page-footer:
+    left: "Minaxia is a registered trade mark of [Cylenk SA](https://www.cylenk.com/) in Switzerland."
+    center: "[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)"
+    right: "[About](about.qmd)"
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+      - styles.scss
+    toc: true
+
+
+

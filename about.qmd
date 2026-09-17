@@ -1,0 +1,53 @@
+---
+title: "About Minaxia"
+---
+
+Minaxia® is an openly licensed **semi-quantitative cybersecurity risk estimation method for connected and embedded products**, published and maintained by [Cylenk](https://www.cylenk.com/).
+
+The goal is to make a practical, transparent method widely available: one that teams can inspect, apply, discuss and improve. It is available free of charge, including for commercial use under its [licence](#licence-and-attribution). You do not need to engage Cylenk to use it.
+
+Minaxia estimates risk for already identified scenarios; it is not a complete risk assessment process. The [method](index.qmd) is the assessor-facing reference. Version {{< var method.version >}} is an initial-development release and makes no empirical-validation claim; the separate [calibration document](calibration.qmd) explains its current basis and release policy.
+
+## Authorship and stewardship {#authorship-and-stewardship}
+
+**Eric Seuret is the original author of Minaxia.** His background spans embedded systems, connected products and regulatory work in medical and industrial settings. He also lectures in industrial and mobile robotics at Fachhochschule Graubünden. [More about Eric](https://www.cylenk.com/en/about/).
+
+**Cylenk SA publishes and maintains the official method**, reviews contributions and retains final editorial authority over official releases. Cylenk's focus is cybersecurity grounded in the product: its firmware, hardware, connectivity and operating constraints.
+
+Minaxia is open to contributions beyond its original author. Contributors retain copyright in their contributions and license them under CC BY 4.0. Under that licence, Cylenk may edit and include accepted contributions in official releases published under its Minaxia trade mark, with the required attribution. Contributing does not grant any rights to the Minaxia trade mark.
+
+## Collaboration and contributors {#collaboration-and-contributors}
+
+Practical experience, critical review and different perspectives can help improve the method. Contributions are welcome through the [public GitHub repository](https://github.com/cylenk-labs/minaxia):
+
+- report unclear wording or inconsistent scoring guidance;
+- propose improvements with a rationale and relevant examples;
+- share non-confidential application experience or suggest translations.
+
+Use [issues](https://github.com/cylenk-labs/minaxia/issues) to start a discussion or submit a pull request for a specific change. Please read the short [contribution guidance](https://github.com/cylenk-labs/minaxia/blob/main/CONTRIBUTING.md) first.
+
+Substantive contributions will be acknowledged here using contributors' preferred public names, including reviews, examples and translations as well as document edits. The repository records individual changes and their authors.
+
+## Licence and attribution {#licence-and-attribution}
+
+The Minaxia method and accompanying documentation are licensed under **[Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)**. You may share and adapt the material, including commercially, under the licence terms.
+
+© 2026 Cylenk SA for the original material. Contributors retain copyright in their contributions.
+
+When sharing the material or an adaptation, retain the supplied credits and notices, link to the licence and identify any changes, as required by the licence. Attribution can be provided in a manner reasonable for the medium and context. A suggested starting point is:
+
+> Minaxia — Cybersecurity Risk Estimation Method for Connected and Embedded Products, version {{< var method.version >}}. Originally authored by Eric Seuret; published and maintained by Cylenk SA. © 2026 Cylenk SA; contributions belong to their respective authors. [Source and contributor credits](https://www.cylenk.com/minaxia/about.html). Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); provided without warranties under that licence.
+
+For an adaptation, add a description of your changes and retain any existing change notices. This example does not replace the [full licence](https://creativecommons.org/licenses/by/4.0/legalcode.en), which includes the disclaimer of warranties and limitation of liability. The material is provided as-is; using it does not itself establish regulatory compliance or certification.
+
+## Trade mark {#trade-mark}
+
+Minaxia is a registered trade mark of **Cylenk SA in Switzerland**, registration **854727** (registered 31 August 2026).
+
+CC BY 4.0 does not grant trade mark rights or permission to imply Cylenk endorsement. References to Minaxia should identify the method accurately; adaptations should be clearly distinguished from official Minaxia releases.
+
+## Help with a cybersecurity challenge {#cybersecurity-help}
+
+Cylenk provides cybersecurity expertise for connected and embedded products, grounded in hands-on firmware, embedded Linux, hardware/software architecture and regulatory experience.
+
+If you need support with a product cybersecurity challenge, [get in touch with Cylenk](https://www.cylenk.com/en/contact/).
