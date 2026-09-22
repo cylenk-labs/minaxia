@@ -3,12 +3,13 @@ set default-list := true
 log := ".quarto/preview/log"
 lock := ".quarto/preview/lock"
 
-# Start Quarto's live preview at http://127.0.0.1:10001.
+# Start Quarto's live preview at http://127.0.0.1:10000.
+[arg("port", long)]
 [arg("no_browser", long="no-browser", value="--no-browser")]
-@dev no_browser="":
+@dev port="10000" no_browser="":
     mkdir -p .quarto/preview
-    nohup quarto preview --port 10001 {{no_browser}} >{{log}} 2>&1 < /dev/null &
-    echo "Quarto preview starting at http://127.0.0.1:10001 (log: {{log}})"
+    nohup quarto preview --port {{port}} {{no_browser}} >{{log}} 2>&1 < /dev/null &
+    echo "Quarto preview starting at http://127.0.0.1:{{port}} (log: {{log}})"
 
 # Stop the preview process recorded in Quarto's lock file.
 dev-stop:
