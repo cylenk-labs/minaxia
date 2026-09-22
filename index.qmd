@@ -1,13 +1,16 @@
 ---
 title: "Minaxia"
 subtitle: "Cybersecurity Risk Estimation Method for Connected and Embedded Products"
+version: "{{< var method.version >}}"
 format:
   html: default
-  # typst:
-  #   toc: true
-  #   number-sections: true
-  #   output-path: _pdf/
-  #   output-file: minaxia-method.pdf
+  minaxia-typst:
+    mainfont: "Libertinus Serif"
+    toc: true
+    number-sections: true
+    section-numbering: "1.1.1"
+    papersize: a4
+    output-file: minaxia-method.pdf
 ---
 
 **Version:** {{< var method.version >}}
@@ -26,7 +29,6 @@ It starts from an already identified scenario with a credible adverse consequenc
 
 Threat identification and threat modelling are outside the scope of Minaxia.
 
----
 
 # Assessment Unit {#assessment-unit}
 
@@ -65,7 +67,6 @@ Where materially different attack paths have different Vector, Opportunity or Ca
 
 Assess credible execution and consequences **given the assumed preconditions**. Do not rate an extreme consequence merely because it is imaginable.
 
----
 
 # Model Overview
 
@@ -78,7 +79,6 @@ Minaxia estimates risk as the combination of **Likelihood** and **Impact**.
 
 The [assessment procedure](#assessment-procedure) follows this order. Detailed category selection and calculation rules are given in the corresponding assessment sections.
 
----
 
 # Scoring Conventions {#scoring-conventions}
 
@@ -103,7 +103,6 @@ Do not score the same restriction or consequence twice merely because it can be 
 
 Separate execution constraints (Vector, Opportunity, and Capability), base consequences, and amplification after successful execution (Replication, Persistence, and Detectability). Follow the scoring rules for each factor or dimension.
 
----
 
 # Assessment Procedure {#assessment-procedure}
 
@@ -114,7 +113,6 @@ Separate execution constraints (Vector, Opportunity, and Capability), base conse
 5. Calculate the [Impact and determine its class](#modified-impact-score).
 6. Combine the Likelihood and Impact classes using the [Risk Matrix](#risk-matrix).
 
----
 
 # Likelihood Assessment
 
@@ -146,7 +144,6 @@ Physical and network access restrictions belong here, not in Opportunity. A requ
 
 If uncertainty spans categories, use the higher score unless documented evidence supports the lower one. An impossible vector is not Disassembly or a minimum score: revisit the scenario instead of forcing it onto the scale.
 
----
 
 ## Opportunity (O) {#opportunity}
 
@@ -240,7 +237,6 @@ Use these distinctions to place a constraint in the appropriate factor:
 - "The actor must develop a custom protocol exploit" → **Capability**.
 :::
 
----
 
 ## Capability (Cap) {#actor-capability}
 
@@ -270,7 +266,6 @@ Rate what the scenario **requires**, not what a hypothetical named attacker migh
 
 Do not increase or decrease Capability merely because the presumed attacker is, for example, an insider, cybercriminal, researcher, administrator, or state actor.
 
----
 
 ## Likelihood (Lik) {#likelihood-score}
 
@@ -298,7 +293,6 @@ Map the unrounded Likelihood to a class:
 | **Low** | **${{< var likelihood.class_boundaries.low >}} \le \mathrm{Lik} < {{< var likelihood.class_boundaries.medium >}}$** | Likelihood from {{< var likelihood.class_boundaries.low >}} up to, but not including, {{< var likelihood.class_boundaries.medium >}}. |
 | **Very Low** | **${{< var score_scale.minimum >}}.0 \le \mathrm{Lik} < {{< var likelihood.class_boundaries.low >}}$** | Likelihood from {{< var score_scale.minimum >}}.0 up to, but not including, {{< var likelihood.class_boundaries.low >}}. |
 
----
 
 # Impact Assessment {#impact-assessment}
 
@@ -333,7 +327,6 @@ Where category descriptions overlap, select the highest applicable score. Disclo
 "Critical" is contextual and may include credentials, secrets, security-sensitive configuration, sensitive personal data, proprietary information, or other data whose disclosure materially increases harm.
 :::
 
----
 
 ### Integrity (I) {#integrity}
 
@@ -353,7 +346,6 @@ Integrity measures unauthorised modification, corruption, manipulation, or forge
 Authenticity is not scored as a separate Minaxia dimension. Where an authenticity failure allows forged identities, commands, firmware, measurements, or data to be accepted, score its consequence under Integrity and, where applicable, the relevant real-world harm dimension.
 :::
 
----
 
 ### Availability (A) {#availability}
 
@@ -372,7 +364,6 @@ Availability concerns the product or service itself. Downstream disruption to ac
 
 Persistence must not be used to count the same outage duration twice. The Persistence modifier is reserved for persistence **of compromise or harmful state after the initiating action**, especially where trusted recovery is difficult or the attacker does not need to remain active.
 
----
 
 ### Safety (S) {#unsafe-harm}
 
@@ -387,7 +378,6 @@ Safety measures credible adverse consequences to the health or physical safety o
 | **Minor** | **2** | Temporary discomfort or very minor injury; professional medical treatment is normally not required. |
 | **None** | **1** | No credible adverse effect on health or physical safety. |
 
----
 
 ### Loss (Los) {#financial-material-harm}
 
@@ -404,7 +394,6 @@ Loss measures credible financial loss or material/property damage caused by succ
 
 The manufacturer's cost of remediation is **not automatically impact**. A costly redesign, recall, or field-service campaign does not raise Loss when that cost is not a consequence of successful exploitation itself.
 
----
 
 ### Disruption (Dis) {#operational-harm}
 
@@ -425,7 +414,6 @@ Disruption measures disruption or degradation of activities, processes, systems,
 **Disruption** asks what that technical loss does to the activities, systems, or services that depend on those functions.
 :::
 
----
 
 ### Applicability check {#applicability-check}
 
@@ -455,7 +443,6 @@ $$
 
 Do not average unrelated impact dimensions.
 
----
 
 ## Impact Modifiers {#impact-modifiers}
 
@@ -509,7 +496,6 @@ Replication amplifies the consequence **after successful exploitation**; it does
 - **One backend compromise exposes every device account at once** → Replication is **One-to-many (`3`)**. Rate Base Confidentiality for the protected data defined for each account; Replication captures the extension across accounts.
 :::
 
----
 
 ### Persistence (P) {#persistence-modifier}
 
@@ -528,7 +514,6 @@ Persistence is not simply "long duration". Do not double count duration already 
 Examples that can justify high Persistence include persistent firmware modification, implanted credentials, durable cloud-side account takeover, destructive corruption that defeats normal recovery, or compromise that survives reboot and ordinary update mechanisms.
 :::
 
----
 
 ### Detectability (Det) {#low-detectability-modifier}
 
@@ -551,7 +536,6 @@ Do not double count a stealth requirement that is itself necessary to execute th
 In the rationale, identify who could notice the compromise or harmful effect, what signal would reveal it, and whether that signal would arrive in time to limit harm. This makes the selected Detectability category easier to review.
 :::
 
----
 
 ## Impact (Imp) and Class {#modified-impact-score}
 
@@ -603,7 +587,6 @@ Modifiers consume only the **remaining headroom up to {{< var score_scale.maximu
 - a Base Impact of ${{< var score_scale.maximum >}}$ remains ${{< var score_scale.maximum >}}$, regardless of modifiers.
 
 
----
 
 # Risk estimation (RC) {#risk-matrix}
 
@@ -619,7 +602,6 @@ For scenarios that pass the [applicability check](#applicability-check), combine
 
 The classes are ordinal. Do not replace the matrix with arithmetic multiplication of class numbers.
 
----
 
 # Annex — Opportunity Interpretation {#opportunity-interpretation}
 

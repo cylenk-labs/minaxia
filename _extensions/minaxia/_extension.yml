@@ -1,0 +1,10 @@
+title: Minaxia Typst
+version: "0.1.0"
+quarto-required: ">=1.9.38"
+contributes:
+  formats:
+    typst:
+      brand: false
+      template-partials:
+        - typst-template.typ
+        - typst-show.typ
