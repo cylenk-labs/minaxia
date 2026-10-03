@@ -1,4 +1,5 @@
 set default-list := true
+set dotenv-load 
 
 log := ".quarto/preview/log"
 lock := ".quarto/preview/lock"
@@ -44,4 +45,20 @@ dev-follow:
 
 # Render the site to HTML.
 build:
-    quarto render
+    quarto render --to html
+
+# Create a PDF version int _out
+pdf:
+    quarto render index.qmd --to minaxia-typst --output-dir _out -o "minaxia-$(yq .method.version _variables.yml).pdf"
+
+# Publsh the method to $PUBLISHTARGET defined in .env
+publish: build
+    rsync -avz --delete _site/ $PUBLISHTARGET
+
+# Clean all generated directoryes
+clean:
+    rm -Rf _site/*
+    rm -Rf _out/*
+
+
+

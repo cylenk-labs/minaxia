@@ -1,4 +1,6 @@
 _site/
+_out/
+.env
 
 /.quarto/
 **/*.quarto_ipynb
