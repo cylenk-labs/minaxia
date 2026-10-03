@@ -5,14 +5,10 @@ version: "{{< var method.version >}}"
 format:
   html: default
   minaxia-typst:
-    mainfont: "Libertinus Serif"
-    toc: true
-    number-sections: true
-    section-numbering: "1.1.1"
-    papersize: a4
     output-file: minaxia-method.pdf
 ---
 
+::: {.content-visible when-format="html"}
 **Version:** {{< var method.version >}}
 
 Published and maintained by [Cylenk](https://www.cylenk.com/) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · [About](about.qmd) · [Contributors](about.qmd#collaboration-and-contributors)
@@ -28,6 +24,7 @@ It starts from an already identified scenario with a credible adverse consequenc
 3. an overall **Risk** class.
 
 Threat identification and threat modelling are outside the scope of Minaxia.
+:::
 
 
 # Assessment Unit {#assessment-unit}

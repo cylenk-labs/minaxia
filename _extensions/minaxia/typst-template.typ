@@ -49,10 +49,20 @@
     block(text(size: 20pt, subtitle))
     v(1em)
     line(stroke: line-strokes, length: 2.5cm)
-    block[
-      #smallcaps[Version]: #version \
-      #smallcaps(datetime.today().display("[month repr:long] [year]"))
-    ]
+
+    grid(
+      columns: (auto, 1fr),
+      inset: 4pt,
+      smallcaps[Version:], version,
+      smallcaps[License:], {
+        show underline: it => it.body 
+        link("https://creativecommons.org/licenses/by/4.0/", text(fill:cylenk-charcoal)[CC BY 4.0])
+      },
+      grid.cell(
+        colspan: 2,
+        smallcaps(datetime.today().display("[month repr:long] [year]")))
+    )
+
     v(1fr)
 
 
@@ -81,7 +91,7 @@
               dir: ttb,
               spacing: 8pt,
               line(stroke: line-strokes),
-              link("https://cylenk.com/minaxia", text(fill:black, strong[cylenk.com/minaxia])))
+              link("https://cylenk.com/minaxia", text(fill:cylenk-charcoal, strong[cylenk.com/minaxia])))
             ))
       )
     }
